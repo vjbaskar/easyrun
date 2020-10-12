@@ -1,7 +1,7 @@
 # easyrun
 
 
-# Dependencies
+## Dependencies
 time
 os
 pandas
