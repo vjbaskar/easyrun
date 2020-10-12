@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-""" batch_command
+""" easyrun
 Usage:
-     slurm_run.py -h|--help
-     slurm_run.py file --jobname=<job-name> [ --partition=<p> ] [ --account=<A> ] [ --time=<D-HH:MM:SS> ] \
+     easyrun -h|--help
+     easyrun file --jobname=<job-name> [ --partition=<p> ] [ --account=<A> ] [ --time=<D-HH:MM:SS> ] \
 [--memory=<MB>] [--nodes=<N>] [--ntasks=<n>] [--log=<logfile>] [--email=<email>] COMMANDFILE
-    slurm_run.py command --jobname=<job-name> [ --partition=<p> ] [ --account=<A> ] [ --time=<D-HH:MM:SS> ] \
+     easyrun command --jobname=<job-name> [ --partition=<p> ] [ --account=<A> ] [ --time=<D-HH:MM:SS> ] \
 [--memory=<MB>] [--nodes=<N>] [--ntasks=<n>] [--log=<logfile>] [--email=<email>] COMMAND
 
 Options:
@@ -50,8 +50,8 @@ class Slurmjob:
             print("Running a bash file")
             cmd = ['sbatch', self.job['slurm_file']]
             if os.path.exists(self.job['COMMANDFILE']):
-                #shellout = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-                shellout = "output from shell"
+                shellout = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+                #shellout = "output from shell"
                 print("Output" + shellout)
                 self.job['shellout'] = shellout
             else:
