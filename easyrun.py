@@ -106,25 +106,28 @@ class Slurmjob:
         df = pd.DataFrame.from_dict([jobd])
         df.to_csv(recordfile, header=h, index=False, mode=fmod)
 
-    def _create_slurm_dirs(self):
+    def _create_dirs(self):
         home_dir = os.getenv("HOME")
-        if not os.path.exists(".slurm"):
-            os.makedirs(".slurm")
-        if not os.path.exists(".easyrun"):
-            os.makedirs(".easyrun")
-        main_recorddir=home_dir + "/.easyrun"
+        slurmdir = ".slurm"
+        local_recorddir = ".easyrun"
+        main_recorddir = home_dir + "/.easyrun_main"
+        if not os.path.exists(slurmdir):
+            os.makedirs(slurmdir)
+        if not os.path.exists(local_recorddir):
+            os.makedirs(local_recorddir)
+        #main_recorddir=home_dir + "/.easyrun_main"
         if not os.path.exists(main_recorddir):
             os.makedirs(main_recorddir)
+        return [home_dir, slurmdir, local_recorddir, main_recorddir]
 
 
     def record_job(self):
-        self._create_slurm_dirs()
+        home_dir, slurmdir, local_recorddir, main_recorddir = self._create_dirs()
         jobd = self.job
-        home_dir = os.getenv("HOME")
         #recordfile=".easyrun/hist.cmds"
-        self._recorder(recordfile = ".easyrun/hist.cmds")
+        self._recorder(recordfile = local_recorddir + "/hist.cmds")
         #recordfile = ".easyrun/hist.cmds"
-        self._recorder(recordfile = home_dir + "/.easyrun/hist.cmds")
+        self._recorder(recordfile = main_recorddir+ "/hist.cmds")
 
 
 if __name__ == '__main__':
