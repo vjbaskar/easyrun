@@ -50,9 +50,10 @@ class Slurmjob:
             print("Running a bash file")
             cmd = ['sbatch', self.job['slurm_file']]
             if os.path.exists(self.job['COMMANDFILE']):
-                shellout = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+                #shellout = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+                shellout = subprocess.run(cmd, capture_output=True)
                 #shellout = "output from shell"
-                print("Output" + shellout)
+                #print("Output" + shellout)
                 self.job['shellout'] = shellout
             else:
                 print("Error: No input file present")
@@ -69,7 +70,7 @@ class Slurmjob:
                          "#SBATCH -A " + jobd['account'],
                          "#SBATCH -N " + jobd['nodes'],
                          "#SBATCH -n " + jobd['ntasks'],
-                         "#SBATCH --jobname " + jobd['jobname'],
+                         "#SBATCH --job-name " + jobd['jobname'],
                          "#SBATCH --output " + ".slurm/" + jobd['log'],
                          "#SBATCH --error " + ".slurm/" + jobd['log'],
                          "#SBATCH --mail-type BEGIN,END,FAIL",
