@@ -46,20 +46,24 @@ class Slurmjob:
         return(self.job)
 
     def start_job(self):
+
         print("Running a bash file")
         cmd = ['sbatch', self.job['slurm_file']]
-        if os.path.exists(self.job['COMMANDFILE']):
-            #shellout = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        if self.job['file'] == True:
+            if os.path.exists(self.job['COMMANDFILE']):
+                #shellout = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+                shellout = subprocess.run(cmd, capture_output=True)
+                #shellout = "output from shell"
+                #print("Output" + shellout)
+            else:
+                print("Error: No input file present")
+                exit(1)
+        if self.job['command'] == True:
             shellout = subprocess.run(cmd, capture_output=True)
-            #shellout = "output from shell"
-            #print("Output" + shellout)
-            self.job['shellout'] = shellout
-        else:
-            print("Error: No input file present")
-            exit(1)
-    #if self.job['local'] == True:
-        ## To do
-    #    cmd = self.job['COMMAND']
+        self.job['shellout'] = shellout
+        #if self.job['local'] == True:
+            ## To do
+        #    cmd = self.job['COMMAND']
 
 
     def write_job(self):
