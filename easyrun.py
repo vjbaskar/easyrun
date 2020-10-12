@@ -129,6 +129,14 @@ class Slurmjob:
         #recordfile = ".easyrun/hist.cmds"
         self._recorder(recordfile = main_recorddir+ "/hist.cmds")
 
+    def bkup_job(self):
+        jobd = self.job
+        if jobd['file']:
+            code_dir = ".easyrun/codes/"
+            if not os.path.exists(code_dir):
+                os.makedirs(code_dir)
+            subprocess.run(['cp', jobd['COMMANDFILE'], code_dir+jobd['slurm_file']+".code"], capture_output=True)
+
 
 if __name__ == '__main__':
     jobd = dict()
@@ -138,4 +146,5 @@ if __name__ == '__main__':
     j.write_job()
     j.start_job()
     j.record_job()
+    j.bkup_job()
     print(j.job)
