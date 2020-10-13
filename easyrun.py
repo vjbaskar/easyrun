@@ -38,7 +38,8 @@ class Slurmjob:
         jobd['invoke_time'] = time.strftime('%Y%m%d-%H%M%S-%s', time.localtime())
         jobd['creation_time'] = time.strftime('%Y-%m-%d %H:%M', time.localtime())
         jobd['runid'] =  jobd['invoke_time'] + "-" + jobd['jobname']
-        jobd["slurm_file"] = jobd['runid'] + ".slurm"
+        jobd['slurmcode_dir'] = 'jobfiles'
+        jobd["slurm_file"] = jobd['slurmcode_dir'] + jobd['runid'] + ".slurm"
         if jobd['log'] == 'default':
             jobd['log'] = ".slurm/" + jobd['runid'] + ".log"
         jobd['memory'] = int(jobd['memory'])
@@ -122,6 +123,8 @@ class Slurmjob:
         # main_recorddir=home_dir + "/.easyrun_main"
         if not os.path.exists(main_recorddir):
             os.makedirs(main_recorddir)
+        if not os.path.exists(jobd['slurmcode_dir']):
+            os.makedirs(jobd['slurmcode_dir'])
         return [home_dir, slurmdir, local_recorddir, main_recorddir]
 
     def record_job(self):
