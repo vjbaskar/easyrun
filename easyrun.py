@@ -47,8 +47,6 @@ class Slurmjob:
         return (self.job)
 
     def start_job(self):
-
-        print("Running a bash file")
         cmd = ['sbatch', self.job['slurm_file']]
         if self.job['file'] == True:
             if os.path.exists(self.job['COMMANDFILE']):
@@ -59,6 +57,7 @@ class Slurmjob:
         if self.job['command'] == True:
             shellout = subprocess.run(cmd, capture_output=True)
         self.job['shellout'] = shellout
+        print(shellout)
         # if self.job['local'] == True:
         ## To do
         #    cmd = self.job['COMMAND']
