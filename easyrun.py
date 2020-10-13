@@ -41,6 +41,7 @@ class Slurmjob:
         jobd["slurm_file"] = jobd['runid'] + ".slurm"
         if jobd['log'] == 'default':
             jobd['log'] = ".slurm/" + jobd['runid'] + ".log"
+        jobd['memory'] = int(jobd['memory'])
         self.job = jobd
 
     def job_details(self):
