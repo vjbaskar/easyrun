@@ -37,7 +37,7 @@ class Slurmjob:
             jobd[k] = docopt_dict[key]
         jobd['invoke_time'] = time.strftime('%Y%m%d-%H%M%S-%s', time.localtime())
         jobd['creation_time'] = time.strftime('%Y-%m-%d %H:%M', time.localtime())
-        jobd['runid'] = jobd['jobname'] + "-" + jobd['invoke_time']
+        jobd['runid'] =  jobd['invoke_time'] + "-" + jobd['jobname']
         jobd["slurm_file"] = jobd['runid'] + ".slurm"
         if jobd['log'] == 'default':
             jobd['log'] = ".slurm/" + jobd['runid'] + ".log"
