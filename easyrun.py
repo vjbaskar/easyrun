@@ -26,27 +26,25 @@ import os
 import pandas as pd
 import subprocess
 
+
 class Slurmjob:
     def __init__(self, docopt_dict):
-       # print("Hello World")
-       # print(docopt_dict)
-       jobd = dict()
-       for key in docopt_dict:
-           k = key.replace('--', '')
-           if isinstance(docopt_dict[key], str):
-               docopt_dict[key] = docopt_dict[key].replace("'","")
-           jobd[k] = docopt_dict[key]
-       jobd['invoke_time']=time.strftime('%Y%m%d-%H%M%S-%s', time.localtime())
-       jobd['creation_time'] = time.strftime('%Y-%m-%d %H:%M', time.localtime())
-       jobd['runid'] = jobd['jobname'] + "-" + jobd['invoke_time']
-       jobd["slurm_file"] = jobd['runid'] + ".slurm"
-       if jobd['log'] == 'default':
-           jobd['log'] = ".slurm/" + jobd['runid'] + ".log"
-       self.job = jobd
+        jobd = dict()
+        for key in docopt_dict:
+            k = key.replace('--', '')
+            if isinstance(docopt_dict[key], str):
+                docopt_dict[key] = docopt_dict[key].replace("'", "")
+            jobd[k] = docopt_dict[key]
+        jobd['invoke_time'] = time.strftime('%Y%m%d-%H%M%S-%s', time.localtime())
+        jobd['creation_time'] = time.strftime('%Y-%m-%d %H:%M', time.localtime())
+        jobd['runid'] = jobd['jobname'] + "-" + jobd['invoke_time']
+        jobd["slurm_file"] = jobd['runid'] + ".slurm"
+        if jobd['log'] == 'default':
+            jobd['log'] = ".slurm/" + jobd['runid'] + ".log"
+        self.job = jobd
 
     def job_details(self):
-        #print(self.job)
-        return(self.job)
+        return (self.job)
 
     def start_job(self):
 
@@ -54,20 +52,16 @@ class Slurmjob:
         cmd = ['sbatch', self.job['slurm_file']]
         if self.job['file'] == True:
             if os.path.exists(self.job['COMMANDFILE']):
-                #shellout = subprocess.Popen(cmd, stdout=subprocess.PIPE)
                 shellout = subprocess.run(cmd, capture_output=True)
-                #shellout = "output from shell"
-                #print("Output" + shellout)
             else:
                 print("Error: No input file present")
                 exit(1)
         if self.job['command'] == True:
             shellout = subprocess.run(cmd, capture_output=True)
         self.job['shellout'] = shellout
-        #if self.job['local'] == True:
-            ## To do
+        # if self.job['local'] == True:
+        ## To do
         #    cmd = self.job['COMMAND']
-
 
     def write_job(self):
         """
@@ -95,7 +89,8 @@ class Slurmjob:
             command.append("bash " + jobd["COMMANDFILE"])
         if jobd['command'] == True:
             command.append(jobd["COMMAND"])
-        slurm_file = jobd['jobname'] + "-" + jobd['invoke_time'] + ".slurm"
+        # slurm_file = jobd['jobname'] + "-" + jobd['invoke_time'] + ".slurm"
+        slurm_file = jobd['slurm_file']
         print(f"Creating slurm file: {slurm_file}")
 
         with open(slurm_file, "w") as f:
@@ -124,36 +119,39 @@ class Slurmjob:
             os.makedirs(slurmdir)
         if not os.path.exists(local_recorddir):
             os.makedirs(local_recorddir)
-        #main_recorddir=home_dir + "/.easyrun_main"
+        # main_recorddir=home_dir + "/.easyrun_main"
         if not os.path.exists(main_recorddir):
             os.makedirs(main_recorddir)
         return [home_dir, slurmdir, local_recorddir, main_recorddir]
 
-
     def record_job(self):
         home_dir, slurmdir, local_recorddir, main_recorddir = self._create_dirs()
         jobd = self.job
-        #recordfile=".easyrun/hist.cmds"
-        self._recorder(recordfile = local_recorddir + "/hist.cmds")
-        #recordfile = ".easyrun/hist.cmds"
-        self._recorder(recordfile = main_recorddir+ "/hist.cmds")
+        # recordfile=".easyrun/hist.cmds"
+        self._recorder(recordfile=local_recorddir + "/hist.cmds")
+        # recordfile = ".easyrun/hist.cmds"
+        self._recorder(recordfile=main_recorddir + "/hist.cmds")
 
-    def bkup_job(self):
+    def copy_code(self):
         jobd = self.job
+        code_dir = ".slurm/codes/"
+        if not os.path.exists(code_dir):
+            os.makedirs(code_dir)
         if jobd['file']:
-            code_dir = ".slurm/codes/"
-            if not os.path.exists(code_dir):
-                os.makedirs(code_dir)
-            subprocess.run(['cp', jobd['COMMANDFILE'], code_dir+jobd['slurm_file']+".code"], capture_output=True)
+            subprocess.run(['cp', jobd['COMMANDFILE'], code_dir + jobd['runid'] + ".code"],
+                           capture_output=True)
+        if jobd['command']:
+            with open(code_dir + jobd['runid'] + ".code", "w") as f:
+                f.writelines(jobd['COMMAND'])
 
 
 if __name__ == '__main__':
     jobd = dict()
-    #arguments = docopt(__doc__, version='batch cmd v1.0', argv=["file", "--jobname='hello'",'outpt.txt'])
+    # arguments = docopt(__doc__, version='batch cmd v1.0', argv=["file", "--jobname='hello'",'outpt.txt'])
     arguments = docopt(__doc__, version='easyrun v1.0')
     j = Slurmjob(arguments)
     j.write_job()
     j.start_job()
     j.record_job()
-    j.bkup_job()
-    print(j.job)
+    j.copy_code()
+    # print(j.job)
