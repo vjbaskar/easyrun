@@ -38,10 +38,11 @@ class Slurmjob:
         jobd['invoke_time'] = time.strftime('%Y%m%d-%H%M%S-%s', time.localtime())
         jobd['creation_time'] = time.strftime('%Y-%m-%d %H:%M', time.localtime())
         jobd['runid'] =  jobd['invoke_time'] + "-" + jobd['jobname']
-        jobd['slurmcode_dir'] = 'jobfiles'
+        jobd['slurmcode_dir'] = 'jobfiles/'
         jobd["slurm_file"] = jobd['slurmcode_dir'] + jobd['runid'] + ".slurm"
         if jobd['log'] == 'default':
             jobd['log'] = ".slurm/" + jobd['runid'] + ".log"
+        print(type(jobd['memory']))
         jobd['memory'] = int(jobd['memory'])
         self.job = jobd
 
@@ -84,7 +85,7 @@ class Slurmjob:
                    "#SBATCH -p " + jobd['partition']
                    ]
         if jobd['memory'] != -1:
-            command.append("#SBATCH --mem " + jobd['memory'])
+            command.append("#SBATCH --mem " + str(jobd['memory']))
 
         if jobd['file'] == True:
             command.append("bash " + jobd["COMMANDFILE"])
@@ -112,6 +113,7 @@ class Slurmjob:
         df.to_csv(recordfile, header=h, index=False, mode=fmod)
 
     def _create_dirs(self):
+        jobd = self.job
         home_dir = os.getenv("HOME")
         slurmdir = ".slurm"
         local_recorddir = ".easyrun"
