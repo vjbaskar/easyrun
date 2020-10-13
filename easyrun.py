@@ -18,7 +18,7 @@ Options:
     --nodes=<nodes>             Number of nodes [default: 1]
     --ntasks=<ntasks>           Number of tasks (cores) [default: 1]
     --jobname=<jobname>         Name of the job. Will be appended to logs.
-    --log=<log>                 log file. Both stdout and stderr are written in the same file. [default: jobname]
+    --log=<log>                 log file. Both stdout and stderr are written in the same file. [default: default]
 """
 from docopt import docopt
 import time
@@ -38,7 +38,9 @@ class Slurmjob:
            jobd[k] = docopt_dict[key]
        jobd['invoke_time']=time.strftime('%Y%m%d-%H%M%S-%s', time.localtime())
        jobd['creation_time'] = time.strftime('%Y-%m-%d %H:%M', time.localtime())
-
+       jobd["slurm_file"] = jobd['jobname'] + "-" + jobd['invoke_time'] + ".slurm"
+       if jobd['log'] == 'default':
+           jobd['log'] = ".slurm/" + jobd['slurm_file'].replace('.slurm', '.log')
        self.job = jobd
 
     def job_details(self):
@@ -67,32 +69,38 @@ class Slurmjob:
 
 
     def write_job(self):
+        """
+        Writes a slurm job file
+        :return: self
+        """
         jobd = self.job
-        command_header = ["#!/bin/bash",
-                         "#SBATCH -p " + jobd['partition'],
-                         "#SBATCH -A " + jobd['account'],
-                         "#SBATCH -N " + jobd['nodes'],
-                         "#SBATCH -n " + jobd['ntasks'],
-                         "#SBATCH --job-name " + jobd['jobname'],
-                         "#SBATCH --output " + ".slurm/" + jobd['log'],
-                         "#SBATCH --error " + ".slurm/" + jobd['log'],
-                         "#SBATCH --mail-type BEGIN,END,FAIL",
-                         "#SBATCH --mail-user " + jobd['email'],
-                         "#SBATCH --time " + jobd['time'],
-                         "#SBATCH -p " + jobd['partition']
-                         ]
+        command = ["#!/bin/bash",
+                   "#SBATCH -p " + jobd['partition'],
+                   "#SBATCH -A " + jobd['account'],
+                   "#SBATCH -N " + jobd['nodes'],
+                   "#SBATCH -n " + jobd['ntasks'],
+                   "#SBATCH --job-name " + jobd['jobname'],
+                   "#SBATCH --output " + jobd['log'],
+                   "#SBATCH --error " + jobd['log'],
+                   "#SBATCH --mail-type BEGIN,END,FAIL",
+                   "#SBATCH --mail-user " + jobd['email'],
+                   "#SBATCH --time " + jobd['time'],
+                   "#SBATCH -p " + jobd['partition']
+                   ]
+        if jobd['memory'] != -1:
+            command.append("#SBATCH --mem " + jobd['memory'])
+
         if jobd['file'] == True:
-            command_header.append("bash " + jobd["COMMANDFILE"])
+            command.append("bash " + jobd["COMMANDFILE"])
         if jobd['command'] == True:
-            command_header.append(jobd["COMMAND"])
+            command.append(jobd["COMMAND"])
         slurm_file = jobd['jobname'] + "-" + jobd['invoke_time'] + ".slurm"
-        print (f"Creating slurm file: {slurm_file}")
-        #print(command_header)
+        print(f"Creating slurm file: {slurm_file}")
+
         with open(slurm_file, "w") as f:
-            f.writelines("\n".join(command_header))
+            f.writelines("\n".join(command))
         jobd['slurm_file'] = slurm_file
         jobd['cwd'] = os.getcwd()
-        #jobd['command_header'] = command_header
         self.job = jobd
 
     def _recorder(self, recordfile):
