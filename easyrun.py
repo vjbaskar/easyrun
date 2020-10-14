@@ -25,7 +25,7 @@ import time
 import os
 import pandas as pd
 import subprocess
-
+import sys
 
 class Slurmjob:
     def __init__(self, docopt_dict):
@@ -44,6 +44,7 @@ class Slurmjob:
             jobd['log'] = ".slurm/" + jobd['runid'] + ".log"
         print(type(jobd['memory']))
         jobd['memory'] = int(jobd['memory'])
+        jobd['cmdline'] = sys.argv
         self.job = jobd
 
     def job_details(self):
@@ -152,6 +153,7 @@ class Slurmjob:
 
 if __name__ == '__main__':
     jobd = dict()
+    print(sys.argv)
     # arguments = docopt(__doc__, version='batch cmd v1.0', argv=["file", "--jobname='hello'",'outpt.txt'])
     arguments = docopt(__doc__, version='easyrun v1.0')
     j = Slurmjob(arguments)
