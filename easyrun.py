@@ -72,6 +72,8 @@ class Slurmjob:
         :return: self
         """
         jobd = self.job
+        if not os.path.exists(jobd['slurmcode_dir']):
+            os.makedirs(jobd['slurmcode_dir'])
         command = ["#!/bin/bash",
                    "#SBATCH -p " + jobd['partition'],
                    "#SBATCH -A " + jobd['account'],
@@ -126,8 +128,6 @@ class Slurmjob:
         # main_recorddir=home_dir + "/.easyrun_main"
         if not os.path.exists(main_recorddir):
             os.makedirs(main_recorddir)
-        if not os.path.exists(jobd['slurmcode_dir']):
-            os.makedirs(jobd['slurmcode_dir'])
         return [home_dir, slurmdir, local_recorddir, main_recorddir]
 
     def record_job(self):
