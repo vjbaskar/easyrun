@@ -42,7 +42,6 @@ class Slurmjob:
         jobd["slurm_file"] = jobd['slurmcode_dir'] + jobd['runid'] + ".slurm"
         if jobd['log'] == 'default':
             jobd['log'] = ".slurm/" + jobd['runid'] + ".log"
-        print(type(jobd['memory']))
         jobd['memory'] = int(jobd['memory'])
         jobd['cmdline'] = sys.argv
         self.job = jobd
@@ -61,7 +60,10 @@ class Slurmjob:
         if self.job['command'] == True:
             shellout = subprocess.run(cmd, capture_output=True)
         self.job['shellout'] = shellout
-        print(shellout)
+        s = shellout.stdout
+        slurmjob_id = s.split()[3].decode("utf-8")
+        self.job['slurmjob_id'] = slurmjob_id
+            #print(shellout)
         # if self.job['local'] == True:
         ## To do
         #    cmd = self.job['COMMAND']
@@ -96,7 +98,7 @@ class Slurmjob:
             command.append(jobd["COMMAND"])
         # slurm_file = jobd['jobname'] + "-" + jobd['invoke_time'] + ".slurm"
         slurm_file = jobd['slurm_file']
-        print(f"Creating slurm file: {slurm_file}")
+        #print(f"Creating slurm file: {slurm_file}")
 
         with open(slurm_file, "w") as f:
             f.writelines("\n".join(command))
@@ -104,16 +106,30 @@ class Slurmjob:
         jobd['cwd'] = os.getcwd()
         self.job = jobd
 
-    def _recorder(self, recordfile):
+    def _recorder(self, recordfile, type = "all"):
         jobd = self.job
-        if os.path.exists(recordfile):
-            fmod = "a"
-            h = False
-        else:
-            fmod = "w"
-            h = True
-        df = pd.DataFrame.from_dict([jobd])
-        df.to_csv(recordfile, header=h, index=False, mode=fmod)
+        if type == "all":
+            if os.path.exists(recordfile):
+                fmod = "a"
+                h = False
+            else:
+                fmod = "w"
+                h = True
+            df = pd.DataFrame.from_dict([jobd])
+            df.to_csv(recordfile, header=h, index=False, mode=fmod)
+        if type == 'cmd':
+            if os.path.exists(recordfile):
+                fmod = "a"
+                h = False
+            else:
+                fmod = "w"
+                h = True
+            rid = jobd['runid']
+            cm = " ".join(jobd['cmdline'])
+            df = pd.DataFrame({'slurmjob_id': jobd['slurmjob_id'], 'runid':rid, 'created': jobd['creation_time'], 'invoked': jobd['invoke_time'], 'cwd': jobd['cwd'], 'cmd': cm }, index = [jobd['slurm_file']])
+         #   df = pd.DataFrame({'runid': 1, 'cmd': 2 }, index=[1])
+            df.to_csv(recordfile, header=h, index=False, mode=fmod)
+
 
     def _create_dirs(self):
         jobd = self.job
@@ -137,6 +153,8 @@ class Slurmjob:
         self._recorder(recordfile=local_recorddir + "/hist.cmds")
         # recordfile = ".easyrun/hist.cmds"
         self._recorder(recordfile=main_recorddir + "/hist.cmds")
+        self._recorder(recordfile=local_recorddir + "/cmdline.txt", type='cmd')
+        self._recorder(recordfile=main_recorddir + "/cmdlile.txt", type='cmd')
 
     def copy_code(self):
         jobd = self.job
@@ -153,7 +171,7 @@ class Slurmjob:
 
 if __name__ == '__main__':
     jobd = dict()
-    print(sys.argv)
+    #print(sys.argv)
     # arguments = docopt(__doc__, version='batch cmd v1.0', argv=["file", "--jobname='hello'",'outpt.txt'])
     arguments = docopt(__doc__, version='easyrun v1.0')
     j = Slurmjob(arguments)
@@ -161,4 +179,3 @@ if __name__ == '__main__':
     j.start_job()
     j.record_job()
     j.copy_code()
-    # print(j.job)
