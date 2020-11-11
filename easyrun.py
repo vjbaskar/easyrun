@@ -179,3 +179,8 @@ if __name__ == '__main__':
     j.start_job()
     j.record_job()
     j.copy_code()
+
+    ## Some printing ##
+    print(f"Easyrun job id: {j.job['runid']}")
+    print(f"Slurm job id: {j.job['slurmjob_id']}")
+    print(f"Slurm job stdout/stderr: {j.job['log']}")
